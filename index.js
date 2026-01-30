@@ -35,11 +35,11 @@ const connectDB = async () => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from public directory
+// Serve static files from public directory (must come before routes)
 app.use(express.static('public'));
 
 // API Routes
-app.use('/', runnerRoutes);
+app.use('/api', runnerRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;

@@ -21,7 +21,15 @@ const feeMap = {
 // Create Razorpay Order
 const createOrder = async (req, res) => {
   try {
-    const { first_name, last_name, email, mobile_no, gender, category } = req.body;
+    const {
+      first_name, last_name, email, mobile_no, gender, category,
+      dob, blood_group, tshirt_size, city, id_proof_type, age_group
+    } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'ID Proof document is required.' });
+    }
+
     const amount = feeMap[category];
 
     if (!amount) {
@@ -44,6 +52,13 @@ const createOrder = async (req, res) => {
       mobile_no,
       gender,
       category,
+      dob,
+      blood_group,
+      tshirt_size,
+      city,
+      id_proof_type,
+      id_proof_path: req.file.filename,
+      age_group,
       fee: amount,
       order_id: order.id,
       payment_status: 'pending'

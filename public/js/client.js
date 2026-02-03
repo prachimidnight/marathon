@@ -117,10 +117,97 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDropdown('categoryDropdown', 'category', (value) => {
     const fee = feeMap[value] || 0;
     feeDisplay.textContent = `₹${fee.toLocaleString('en-IN')}`;
+    validateAge();
+    updateAgeGroups(value); // populate age groups
   });
+  setupDropdown('bloodGroupDropdown', 'blood_group');
+  setupDropdown('tshirtDropdown', 'tshirt_size');
+  setupDropdown('idProofDropdown', 'id_proof_type');
+  setupDropdown('ageGroupDropdown', 'age_group');
+
+  // Dynamic Age Group Options
+  const updateAgeGroups = (category) => {
+    const ageGroupDropdown = document.getElementById('ageGroupDropdown');
+    const optionsCont = ageGroupDropdown.querySelector('.custom-options');
+    const input = document.getElementById('age_group');
+    const triggerText = ageGroupDropdown.querySelector('.custom-select-trigger span');
+
+    // Reset selection
+    input.value = '';
+    triggerText.textContent = 'Select Age Group';
+    triggerText.style.color = '';
+
+    let options = [];
+    if (category === '21 kilometer') {
+      options = ['18-29', '30-39', '40-49', '50-59', '60 & above'];
+    } else {
+      // 5km & 10km
+      options = ['14-17', '18-29', '30-39', '40-49', '50-59', '60 & above'];
+    }
+
+    optionsCont.innerHTML = options.map(opt => `<div class="custom-option" data-value="${opt}">${opt}</div>`).join('');
+
+    // Re-attach listeners to new options
+    const newOptions = optionsCont.querySelectorAll('.custom-option');
+    newOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        const value = option.getAttribute('data-value');
+        input.value = value;
+        triggerText.textContent = value;
+        triggerText.style.color = '#f1f5f9';
+
+        newOptions.forEach(op => op.classList.remove('selected'));
+        option.classList.add('selected');
+
+        ageGroupDropdown.classList.remove('open');
+        optionsCont.classList.remove('show');
+        hideError('age_group');
+      });
+    });
+  };
+
+  // Age Validation Logic
+  const validateAge = () => {
+    const dobInput = document.getElementById('dob');
+    const categoryInput = document.getElementById('category');
+    const dobError = document.getElementById('dob_error');
+
+    if (!dobInput.value || !categoryInput.value) return true;
+
+    const dob = new Date(dobInput.value);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+
+    const category = categoryInput.value;
+    let minAge = 0;
+
+    if (category === '21 kilometer') { // Half Marathon
+      minAge = 18;
+    } else if (category === '10 kilometer' || category === '5 kilometer') {
+      minAge = 14;
+    }
+
+    if (age < minAge) {
+      dobError.textContent = `You must be at least ${minAge} years old for ${category}.`;
+      dobError.style.display = 'block';
+      dobInput.style.borderColor = '#f97316';
+      return false;
+    } else {
+      dobError.style.display = 'none';
+      dobInput.style.borderColor = '';
+      return true;
+    }
+  };
+
+  document.getElementById('dob').addEventListener('change', validateAge);
 
   // Real-time validation clearing
-  ['first_name', 'last_name', 'email', 'mobile_no', 'terms'].forEach(id => {
+  ['first_name', 'last_name', 'email', 'mobile_no', 'terms', 'city'].forEach(id => {
+
     const el = document.getElementById(id);
     el.addEventListener('input', () => {
       if (id === 'mobile_no') {
@@ -138,10 +225,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el.type === 'checkbox') el.addEventListener('change', () => hideError(id));
   });
 
+  // File input clear
+  document.getElementById('id_proof').addEventListener('change', () => hideError('id_proof'));
+
   // Validation function
   const validateForm = () => {
     let isValid = true;
-    const data = Object.fromEntries(new FormData(form).entries());
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
 
     if (!data.first_name) { showError('first_name'); isValid = false; }
     if (!data.last_name) { showError('last_name'); isValid = false; }
@@ -158,8 +249,19 @@ document.addEventListener('DOMContentLoaded', () => {
       showError('mobile_no', 'Please enter a valid 10-digit mobile number.'); isValid = false;
     }
 
+    if (!data.city) { showError('city', 'City is required.'); isValid = false; }
     if (!data.gender) { showError('gender'); isValid = false; }
     if (!data.category) { showError('category'); isValid = false; }
+    if (!data.blood_group) { showError('blood_group'); isValid = false; }
+    if (!data.tshirt_size) { showError('tshirt_size'); isValid = false; }
+    if (!data.id_proof_type) { showError('id_proof_type'); isValid = false; }
+    if (!data.age_group) { showError('age_group', 'Please select Age Group.'); isValid = false; }
+
+    const fileInput = document.getElementById('id_proof');
+    if (!fileInput.files.length) { showError('id_proof', 'Please upload ID proof.'); isValid = false; }
+
+    if (!validateAge()) isValid = false;
+
     if (!data.terms) { showError('terms'); isValid = false; }
 
     return isValid;
@@ -172,21 +274,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!validateForm()) return;
 
     const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
+
+    // We cannot jsonify FormData directly for create-order because it now contains a file
+    // But create-order expects multipart/form-data now. 
 
     try {
       // 1. Create Order and Save Pending Registration on Backend
+      // NOTE: We need to send FormData now, not JSON
       const orderResponse = await fetch('/api/create-order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          first_name: data.first_name,
-          last_name: data.last_name,
-          email: data.email,
-          mobile_no: data.mobile_no,
-          gender: data.gender,
-          category: data.category
-        })
+        // Headers are automatically set for FormData (multipart/form-data)
+        body: formData
       });
 
       if (!orderResponse.ok) {
@@ -202,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
         amount: order.amount,
         currency: order.currency,
         name: 'Marathon 2026',
-        description: `Registration for ${data.category}`,
+        description: `Registration for ${formData.get('category')}`,
         order_id: order.id,
         handler: async function (response) {
           // 3. Verify Payment on Backend
@@ -211,7 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                ...data,
+                // We only need payment details and order_id mostly, but existing API might expect fields
+                // Actually existing API just needs razorpay details to find the pending runner by order_id
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature
@@ -231,9 +330,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         },
         prefill: {
-          name: `${data.first_name} ${data.last_name}`,
-          email: data.email || '',
-          contact: data.mobile_no
+          name: `${formData.get('first_name')} ${formData.get('last_name')}`,
+          email: formData.get('email') || '',
+          contact: formData.get('mobile_no')
         },
         theme: {
           color: '#f97316' // orange-500
@@ -245,7 +344,6 @@ document.addEventListener('DOMContentLoaded', () => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                ...data,
                 order_id: order.id,
                 error: { description: 'User closed the checkout modal (dismissed)' }
               })
@@ -264,7 +362,6 @@ document.addEventListener('DOMContentLoaded', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            ...data,
             order_id: order.id,
             payment_id: response.error.metadata.payment_id,
             error: response.error

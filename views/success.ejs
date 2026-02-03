@@ -69,6 +69,31 @@
           </p>
         </div>
         <div>
+          <p class="text-xs uppercase tracking-widest text-slate-500 font-bold mb-1">T-Shirt Size</p>
+          <p class="text-lg text-white font-medium">
+            <%= runner.tshirt_size %>
+          </p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-widest text-slate-500 font-bold mb-1">Blood Group</p>
+          <p class="text-lg text-white font-medium">
+            <%= runner.blood_group %>
+          </p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-widest text-slate-500 font-bold mb-1">Date of Birth</p>
+          <p class="text-lg text-white font-medium">
+            <%= new Date(runner.dob).toLocaleDateString('en-IN', { day: '2-digit' , month: 'short' , year: 'numeric' })
+              %>
+          </p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-widest text-slate-500 font-bold mb-1">Age Group</p>
+          <p class="text-lg text-white font-medium">
+            <%= runner.age_group %>
+          </p>
+        </div>
+        <div>
           <p class="text-xs uppercase tracking-widest text-slate-500 font-bold mb-1">Email Address</p>
           <p class="text-lg text-white font-medium">
             <%= runner.email %>
@@ -78,6 +103,19 @@
           <p class="text-xs uppercase tracking-widest text-slate-500 font-bold mb-1">Mobile Number</p>
           <p class="text-lg text-white font-medium">
             <%= runner.mobile_no %>
+          </p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-widest text-slate-500 font-bold mb-1">City</p>
+          <p class="text-lg text-white font-medium">
+            <%= runner.city %>
+          </p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-widest text-slate-500 font-bold mb-1">ID Proof (<%= runner.id_proof_type
+              %>)</p>
+          <p class="text-lg text-white font-medium">
+            <%= runner.id_proof_number %>
           </p>
         </div>
         <div>
@@ -124,9 +162,9 @@
 
   <!-- Branding Footer -->
   <footer class="mt-12 mb-12 text-center">
-    <p class="text-slate-500 text-sm mb-2">&copy; 2026 Marathon. All rights reserved.</p>
-    <p class="text-slate-400 text-sm">
-      Powered by <span class="font-bold text-orange-500 italic">runr</span>
+    <p class="text-slate-500 text-sm">
+      &copy; 2026 Marathon. All rights reserved. <span class="text-orange-500 mx-2"> </span> Powered by <span
+        class="font-bold text-orange-500 italic">runr</span>
     </p>
   </footer>
 </body>

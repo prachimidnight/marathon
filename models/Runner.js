@@ -1,4 +1,4 @@
-                                                                                    import mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 const runnerSchema = new mongoose.Schema({
   first_name: {
@@ -42,6 +42,38 @@ const runnerSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: ['5 kilometer', '10 kilometer', '21 kilometer']
+  },
+  dob: {
+    type: Date,
+    required: true
+  },
+  blood_group: {
+    type: String,
+    required: true,
+    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+  },
+  tshirt_size: {
+    type: String,
+    required: true,
+    enum: ['S', 'M', 'L', 'XL', 'XXL']
+  },
+  city: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  id_proof_type: {
+    type: String,
+    required: true,
+    enum: ['Aadhar Card', 'Passport']
+  },
+  id_proof_path: {
+    type: String,
+    required: true
+  },
+  age_group: {
+    type: String,
+    required: true
   },
   fee: {
     type: Number,

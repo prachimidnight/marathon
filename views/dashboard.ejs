@@ -202,7 +202,18 @@
                             <%= runner.email %>
                           </div>
                           <div class="text-xs text-slate-500 mt-1">
-                            <%= runner.mobile_no %>
+                            <%= runner.mobile_no %> | <%= runner.city %>
+                          </div>
+                          <div class="text-xs text-slate-500 mt-0.5">
+                            T-Shirt: <span class="text-slate-400">
+                              <%= runner.tshirt_size %>
+                            </span> | <%= runner.blood_group %>
+                          </div>
+                          <div class="text-xs text-slate-500 mt-0.5">
+                            Age: <span class="text-slate-400">
+                              <%= runner.age_group %>
+                            </span> | <a href="/uploads/id_proofs/<%= runner.id_proof_path %>" target="_blank"
+                              class="text-orange-500 hover:underline">View ID</a>
                           </div>
                         </td>
                         <td class="px-6 py-4">
@@ -254,9 +265,9 @@
 
   <!-- Branding Footer -->
   <footer class="mt-12 mb-12 text-center">
-    <p class="text-slate-500 text-sm mb-2">&copy; 2026 Marathon. All rights reserved.</p>
-    <p class="text-slate-400 text-sm">
-      Powered by <span class="font-bold text-orange-500 italic">runr</span>
+    <p class="text-slate-500 text-sm">
+      &copy; 2026 Marathon. All rights reserved. <span class="text-orange-500 mx-2"> </span> Powered by <span
+        class="font-bold text-orange-500 italic">runr</span>
     </p>
   </footer>
   <script>
@@ -306,7 +317,13 @@
               ${runner.email}
             </div>
             <div class="text-xs text-slate-500 mt-1">
-              ${runner.mobile_no}
+              ${runner.mobile_no} | ${runner.city}
+            </div>
+            <div class="text-xs text-slate-500 mt-0.5">
+              T-Shirt: <span class="text-slate-400">${runner.tshirt_size}</span> | ${runner.blood_group}
+            </div>
+             <div class="text-xs text-slate-500 mt-0.5">
+               Age: <span class="text-slate-400">${runner.age_group}</span> | <a href="/uploads/id_proofs/${runner.id_proof_path}" target="_blank" class="text-orange-500 hover:underline">View ID</a>
             </div>
           </td>
           <td class="px-6 py-4">

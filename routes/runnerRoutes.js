@@ -11,8 +11,17 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'marathon/id_proofs',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'pdf'],
-    resource_type: 'auto'
+    resource_type: 'image',
+    allowed_formats: ['jpg', 'jpeg', 'png'],
+    // Sanitize public_id: remove spaces and special characters to prevent URL issues
+    public_id: (req, file) => {
+      const timestamp = Date.now();
+      const sanitizedName = file.originalname
+        .split('.')[0]
+        .replace(/[^a-z0-9]/gi, '_') // Replace non-alphanumeric with underscore
+        .toLowerCase();
+      return `${timestamp}_${sanitizedName}`;
+    }
   }
 });
 

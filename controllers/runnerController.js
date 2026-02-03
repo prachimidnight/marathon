@@ -57,7 +57,7 @@ const createOrder = async (req, res) => {
       tshirt_size,
       city,
       id_proof_type,
-      id_proof_path: req.file.path, // Cloudinary URL
+      id_proof_path: req.file.path, // Full Cloudinary URL
       age_group,
       fee: amount,
       order_id: order.id,

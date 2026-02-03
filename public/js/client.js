@@ -123,7 +123,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Real-time validation clearing
   ['first_name', 'last_name', 'email', 'mobile_no', 'terms'].forEach(id => {
     const el = document.getElementById(id);
-    el.addEventListener('input', () => hideError(id));
+    el.addEventListener('input', () => {
+      if (id === 'mobile_no') {
+        // Restrict to digits only and max 10 characters
+        el.value = el.value.replace(/\D/g, '').substring(0, 10);
+      }
+      hideError(id);
+    });
     if (el.type === 'checkbox') el.addEventListener('change', () => hideError(id));
   });
 
@@ -135,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!data.first_name) { showError('first_name'); isValid = false; }
     if (!data.last_name) { showError('last_name'); isValid = false; }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!data.email) {
       showError('email', 'Email is required.'); isValid = false;
     } else if (!emailRegex.test(data.email)) {
@@ -165,8 +171,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
 
+    // Add +91 prefix to mobile number
+    if (data.mobile_no && !data.mobile_no.startsWith('+91')) {
+      data.mobile_no = '+91' + data.mobile_no;
+    }
+
     try {
-      const response = await fetch('/api/register', {
+      const response = await fetch('/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

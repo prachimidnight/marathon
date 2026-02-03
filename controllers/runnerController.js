@@ -1,6 +1,7 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import Runner from '../models/Runner.js';
+import PaymentLog from '../models/PaymentLog.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -79,11 +80,66 @@ const verifyPayment = async (req, res) => {
     res.status(201).json({ message: 'Registration and payment successful!', data: newRunner });
   } catch (error) {
     console.error('Payment Verification Error:', error);
+
+    // Partial log if we have enough info
+    try {
+      if (req.body.razorpay_order_id) {
+        const failureLog = new PaymentLog({
+          first_name: req.body.first_name,
+          last_name: req.body.last_name,
+          email: req.body.email,
+          mobile_no: req.body.mobile_no,
+          category: req.body.category,
+          order_id: req.body.razorpay_order_id,
+          payment_id: req.body.razorpay_payment_id,
+          error_description: error.message,
+          error_source: 'backend_verification',
+          metadata: { body: req.body }
+        });
+        await failureLog.save();
+      }
+    } catch (logError) {
+      console.error('Error saving failure log during verification:', logError);
+    }
+
     res.status(400).json({ message: 'Payment verification failed!', error: error.message });
+  }
+};
+
+// Log Payment Failure from Frontend
+const logPaymentFailure = async (req, res) => {
+  try {
+    const {
+      first_name, last_name, email, mobile_no, category,
+      order_id, payment_id, error
+    } = req.body;
+
+    const failureLog = new PaymentLog({
+      first_name,
+      last_name,
+      email,
+      mobile_no,
+      category,
+      order_id,
+      payment_id,
+      error_code: error?.code,
+      error_description: error?.description,
+      error_source: error?.source,
+      error_step: error?.step,
+      error_reason: error?.reason,
+      metadata: error || {}
+    });
+
+    await failureLog.save();
+    res.status(201).json({ message: 'Payment failure logged successfully' });
+  } catch (err) {
+    console.error('Error logging payment failure:', err);
+    res.status(500).json({ message: 'Failed to log payment failure', error: err.message });
   }
 };
 
 export default {
   createOrder,
-  verifyPayment
+  verifyPayment,
+  logPaymentFailure
 };

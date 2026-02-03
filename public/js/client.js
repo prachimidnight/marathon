@@ -239,10 +239,43 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         theme: {
           color: '#f97316' // orange-500
+        },
+        modal: {
+          ondismiss: function () {
+            console.log('Checkout modal closed');
+            fetch('/api/log-payment-failure', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ...data,
+                order_id: order.id,
+                error: { description: 'User closed the checkout modal (dismissed)' }
+              })
+            }).catch(e => console.error('Error logging dismissal:', e));
+          }
         }
       };
 
       const rzp = new Razorpay(options);
+
+      rzp.on('payment.failed', function (response) {
+        console.error('Payment Failed:', response.error);
+
+        // Log failure to DB
+        fetch('/api/log-payment-failure', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...data,
+            order_id: order.id,
+            payment_id: response.error.metadata.payment_id,
+            error: response.error
+          })
+        }).catch(e => console.error('Error logging failure:', e));
+
+        showAlert('Payment Failed', response.error.description + '\nReason: ' + (response.error.reason || 'Unknown'), 'error');
+      });
+
       rzp.open();
 
     } catch (error) {

@@ -175,11 +175,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = Object.fromEntries(formData.entries());
 
     try {
-      // 1. Create Order on Backend
+      // 1. Create Order and Save Pending Registration on Backend
       const orderResponse = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: data.category })
+        body: JSON.stringify({
+          first_name: data.first_name,
+          last_name: data.last_name,
+          email: data.email,
+          mobile_no: data.mobile_no,
+          gender: data.gender,
+          category: data.category
+        })
       });
 
       if (!orderResponse.ok) {

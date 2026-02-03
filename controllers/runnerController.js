@@ -20,7 +20,7 @@ const feeMap = {
 // Create Razorpay Order
 const createOrder = async (req, res) => {
   try {
-    const { category } = req.body;
+    const { first_name, last_name, email, mobile_no, gender, category } = req.body;
     const amount = feeMap[category];
 
     if (!amount) {
@@ -34,7 +34,23 @@ const createOrder = async (req, res) => {
     };
 
     const order = await razorpay.orders.create(options);
-    res.status(200).json(order);
+
+    // Save initial runner data with 'pending' status
+    const newRunner = new Runner({
+      first_name,
+      last_name,
+      email,
+      mobile_no,
+      gender,
+      category,
+      fee: amount,
+      order_id: order.id,
+      payment_status: 'pending'
+    });
+
+    await newRunner.save();
+
+    res.status(200).json({ ...order, runnerId: newRunner._id });
   } catch (error) {
     console.error('Order Creation Error:', error);
     res.status(500).json({ message: 'Error creating Razorpay order', error: error.message });
@@ -45,7 +61,6 @@ const createOrder = async (req, res) => {
 const verifyPayment = async (req, res) => {
   try {
     const {
-      first_name, last_name, email, mobile_no, gender, category,
       razorpay_order_id, razorpay_payment_id, razorpay_signature
     } = req.body;
 
@@ -57,27 +72,29 @@ const verifyPayment = async (req, res) => {
       .digest('hex');
 
     if (razorpay_signature !== expectedSign) {
+      // Update runner status to failed if signature fails
+      await Runner.findOneAndUpdate(
+        { order_id: razorpay_order_id },
+        { payment_status: 'failed' }
+      );
       return res.status(400).json({ message: 'Invalid payment signature!' });
     }
 
-    const fee = feeMap[category];
+    const updatedRunner = await Runner.findOneAndUpdate(
+      { order_id: razorpay_order_id },
+      {
+        payment_id: razorpay_payment_id,
+        signature: razorpay_signature,
+        payment_status: 'completed'
+      },
+      { new: true }
+    );
 
-    const newRunner = new Runner({
-      first_name,
-      last_name,
-      email,
-      mobile_no,
-      gender,
-      category,
-      fee,
-      order_id: razorpay_order_id,
-      payment_id: razorpay_payment_id,
-      signature: razorpay_signature,
-      payment_status: 'completed'
-    });
+    if (!updatedRunner) {
+      return res.status(404).json({ message: 'Runner registration not found for this order!' });
+    }
 
-    await newRunner.save();
-    res.status(201).json({ message: 'Registration and payment successful!', data: newRunner });
+    res.status(201).json({ message: 'Registration and payment successful!', data: updatedRunner });
   } catch (error) {
     console.error('Payment Verification Error:', error);
 
@@ -113,6 +130,12 @@ const logPaymentFailure = async (req, res) => {
       first_name, last_name, email, mobile_no, category,
       order_id, payment_id, error
     } = req.body;
+
+    // Update Runner status to failed
+    await Runner.findOneAndUpdate(
+      { order_id: order_id },
+      { payment_status: 'failed' }
+    );
 
     const failureLog = new PaymentLog({
       first_name,

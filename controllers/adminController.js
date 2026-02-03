@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Runner from '../models/Runner.js';
 
 // Static credentials
@@ -21,8 +22,21 @@ const login = (req, res) => {
 
 const getDashboard = async (req, res) => {
   try {
-    const runners = await Runner.find().sort({ registration_date: -1 });
-    res.render('dashboard', { runners });
+    let runners = [];
+    const dbConnected = mongoose.connection.readyState === 1;
+
+    if (dbConnected) {
+      try {
+        runners = await Runner.find().sort({ registration_date: -1 });
+      } catch (dbError) {
+        console.error('Database query failed:', dbError.message);
+      }
+    }
+
+    res.render('dashboard', {
+      runners,
+      dbStatus: dbConnected ? 'connected' : 'disconnected'
+    });
   } catch (error) {
     console.error('Dashboard error:', error);
     res.status(500).send('Internal Server Error');

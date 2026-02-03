@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import Runner from '../models/Runner.js';
@@ -161,6 +162,49 @@ const logPaymentFailure = async (req, res) => {
   }
 };
 
+// Get all runners with search and filters
+const getAllRunners = async (req, res) => {
+  try {
+    const dbConnected = mongoose.connection.readyState === 1;
+    if (!dbConnected) {
+      return res.status(503).json({
+        message: 'Database is offline',
+        error: 'The server could not connect to MongoDB Atlas. Please check your network or IP whitelisting.'
+      });
+    }
+
+    const { search, category, status } = req.query;
+    let query = {};
+
+    // Search filter (name, email, phone)
+    if (search) {
+      const searchRegex = new RegExp(search, 'i');
+      query.$or = [
+        { first_name: searchRegex },
+        { last_name: searchRegex },
+        { email: searchRegex },
+        { mobile_no: searchRegex }
+      ];
+    }
+
+    // Category filter
+    if (category && category !== 'all') {
+      query.category = category;
+    }
+
+    // Status filter
+    if (status && status !== 'all') {
+      query.payment_status = status;
+    }
+
+    const runners = await Runner.find(query).sort({ registration_date: -1 });
+    res.status(200).json(runners);
+  } catch (error) {
+    console.error('Error fetching runners:', error);
+    res.status(500).json({ message: 'Error fetching runners', error: error.message });
+  }
+};
+
 // Get Success Page
 const getSuccessPage = async (req, res) => {
   try {
@@ -179,5 +223,6 @@ export default {
   createOrder,
   verifyPayment,
   logPaymentFailure,
+  getAllRunners,
   getSuccessPage
 };

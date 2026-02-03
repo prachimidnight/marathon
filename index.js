@@ -8,6 +8,9 @@ import adminRoutes from './routes/adminRoutes.js';
 // Load environment variables
 dotenv.config();
 
+// Disable buffering so queries fail immediately if DB is down
+mongoose.set('bufferCommands', false);
+
 const app = express();
 
 // View Engine
@@ -22,18 +25,19 @@ const connectDB = async () => {
 
   const uri = process.env.MONGODB_URI;
   if (!uri) {
-    console.error('MONGODB_URI is not defined in environment variables');
+    console.warn('MONGODB_URI is not defined in environment variables. Server will run but DB features will fail.');
     return null;
   }
 
   try {
     const conn = await mongoose.connect(uri);
     cachedConnection = conn;
-    console.log('Connected to MongoDB...');
+    console.log(`Connected to MongoDB: ${conn.connection.name}...`);
     return conn;
   } catch (err) {
-    console.error('Could not connect to MongoDB:', err);
-    throw err;
+    console.error('Could not connect to MongoDB:', err.message);
+    // Log the error but don't rethrow to keep the server alive for UI testing
+    return null;
   }
 };
 

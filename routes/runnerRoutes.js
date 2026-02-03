@@ -7,6 +7,7 @@ const router = express.Router();
 router.post('/create-order', runnerController.createOrder);
 router.post('/verify-payment', runnerController.verifyPayment);
 router.post('/log-payment-failure', runnerController.logPaymentFailure);
+router.get('/runners', runnerController.getAllRunners);
 router.get('/registration-success/:id', runnerController.getSuccessPage);
 
 export default router;

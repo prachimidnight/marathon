@@ -3,10 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const feeDisplay = document.getElementById('feeDisplay');
 
   const feeMap = {
-    '5K': 1850,
-    '10K': 3200,
-    'Half Marathon': 5000,
-    'Full Marathon': 7350
+    '5 kilometer': 250,
+    '10 kilometer': 500,
+    '21 kilometer': 500
   };
 
   // Custom Alert Function
@@ -132,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           val = '+91' + val.substring(3).replace(/\D/g, '');
         }
-        el.value = val.substring(0, 13); // +91 + 10 digits
+        el.value = val.substring(0, 13); // +91 + 10 digits (max 13 chars)
       }
       hideError(id);
     });
@@ -156,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!data.mobile_no || data.mobile_no === '+91') {
       showError('mobile_no', 'Mobile number is required.'); isValid = false;
     } else if (!mobileRegex.test(data.mobile_no)) {
-      showError('mobile_no', 'Please enter a valid mobile number starting with +91.'); isValid = false;
+      showError('mobile_no', 'Please enter a valid 10-digit mobile number.'); isValid = false;
     }
 
     if (!data.gender) { showError('gender'); isValid = false; }

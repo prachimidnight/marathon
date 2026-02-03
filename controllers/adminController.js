@@ -13,7 +13,7 @@ const login = (req, res) => {
 
   if (username === ADMIN_USER && password === ADMIN_PASS) {
     res.cookie('admin_token', 'logged_in', { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }); // 24 hours
-    return res.redirect('/api/admin/dashboard');
+    return res.redirect('/admin/dashboard');
   }
 
   res.render('login', { error: 'Invalid username or password' });

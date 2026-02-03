@@ -10,6 +10,10 @@ dotenv.config();
 
 const app = express();
 
+// View Engine
+app.set('view engine', 'ejs');
+app.set('views', './views');
+
 // Connect to MongoDB with cached connection
 let cachedConnection = null;
 
@@ -45,8 +49,8 @@ app.use(express.static('public'));
 app.use('/api', runnerRoutes);
 app.use('/', adminRoutes);
 
-// Redirect /login to the login page (handled by adminRoutes mounted at /)
-app.get('/login', (req, res) => res.redirect('/login')); // adminRoutes already defines /login
+// Home route (Registration Page)
+app.get('/', (req, res) => res.render('index'));
 
 
 // Start server

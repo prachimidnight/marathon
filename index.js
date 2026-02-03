@@ -2,11 +2,18 @@ import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import runnerRoutes from './routes/runnerRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 
 // Load environment variables
 dotenv.config();
+
+// ES Module __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Disable buffering so queries fail immediately if DB is down
 mongoose.set('bufferCommands', false);
@@ -46,8 +53,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, 'public', 'uploads', 'id_proofs');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('✅ Created uploads directory:', uploadsDir);
+}
+
 // Serve static files from public directory (must come before routes)
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // API & Admin Routes
 app.use('/api', runnerRoutes);

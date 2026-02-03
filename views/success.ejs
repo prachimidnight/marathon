@@ -111,13 +111,7 @@
             <%= runner.city %>
           </p>
         </div>
-        <div>
-          <p class="text-xs uppercase tracking-widest text-slate-500 font-bold mb-1">ID Proof (<%= runner.id_proof_type
-              %>)</p>
-          <p class="text-lg text-white font-medium">
-            <%= runner.id_proof_number %>
-          </p>
-        </div>
+
         <div>
           <p class="text-xs uppercase tracking-widest text-slate-500 font-bold mb-1">Fee Paid</p>
           <p class="text-lg text-white font-medium">₹<%= runner.fee.toLocaleString('en-IN') %>

@@ -138,8 +138,23 @@ const logPaymentFailure = async (req, res) => {
   }
 };
 
+// Get Success Page
+const getSuccessPage = async (req, res) => {
+  try {
+    const runner = await Runner.findById(req.params.id);
+    if (!runner) {
+      return res.status(404).render('index', { message: 'Runner not found' });
+    }
+    res.render('success', { runner });
+  } catch (error) {
+    console.error('Error fetching success details:', error);
+    res.status(500).redirect('/');
+  }
+};
+
 export default {
   createOrder,
   verifyPayment,
-  logPaymentFailure
+  logPaymentFailure,
+  getSuccessPage
 };

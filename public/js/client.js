@@ -214,16 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await verifyResponse.json();
 
             if (verifyResponse.ok) {
-              showAlert('Success!', 'Registration & Payment Successful! Runner ID: ' + result.data._id, 'success');
-              form.reset();
-              // Reset custom UI elements
-              document.querySelectorAll('.custom-select-trigger span').forEach(span => {
-                if (span.closest('#genderDropdown')) span.textContent = 'Select Gender';
-                if (span.closest('#categoryDropdown')) span.textContent = 'Select Category';
-                span.style.color = '';
-              });
-              document.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
-              feeDisplay.textContent = '₹0';
+              window.location.href = `/api/registration-success/${result.data._id}`;
             } else {
               showAlert('Payment Verification Failed', result.message, 'error');
             }

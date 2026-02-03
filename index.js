@@ -1,7 +1,9 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
 import runnerRoutes from './routes/runnerRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -34,12 +36,18 @@ const connectDB = async () => {
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Serve static files from public directory (must come before routes)
 app.use(express.static('public'));
 
-// API Routes
+// API & Admin Routes
 app.use('/api', runnerRoutes);
+app.use('/', adminRoutes);
+
+// Redirect /login to the login page (handled by adminRoutes mounted at /)
+app.get('/login', (req, res) => res.redirect('/login')); // adminRoutes already defines /login
+
 
 // Start server
 const PORT = process.env.PORT || 5000;

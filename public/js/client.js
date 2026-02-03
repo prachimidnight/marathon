@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return isValid;
   };
 
-  // Form Submission
+  // Form Submission handles Razorpay Payment
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -174,37 +174,80 @@ document.addEventListener('DOMContentLoaded', () => {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
 
-    // Mobile number already has +91 from input or logic above
-
     try {
-      const response = await fetch('/register', {
+      // 1. Create Order on Backend
+      const orderResponse = await fetch('/api/create-order', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: data.category })
       });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        showAlert('Success!', 'Registration Successful! Runner ID: ' + result.data._id, 'success');
-        form.reset();
-
-        // Reset custom UI elements
-        document.querySelectorAll('.custom-select-trigger span').forEach(span => {
-          if (span.closest('#genderDropdown')) span.textContent = 'Select Gender';
-          if (span.closest('#categoryDropdown')) span.textContent = 'Select Category';
-          span.style.color = '';
-        });
-        document.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
-        feeDisplay.textContent = '₹0';
-      } else {
-        showAlert('Registration Failed', result.error, 'error');
+      if (!orderResponse.ok) {
+        const err = await orderResponse.json();
+        throw new Error(err.message || 'Failed to create order');
       }
+
+      const order = await orderResponse.json();
+
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: 'rzp_test_RzN5L8eoRwHEjc', // Test Key
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Marathon 2026',
+        description: `Registration for ${data.category}`,
+        order_id: order.id,
+        handler: async function (response) {
+          // 3. Verify Payment on Backend
+          try {
+            const verifyResponse = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ...data,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            const result = await verifyResponse.json();
+
+            if (verifyResponse.ok) {
+              showAlert('Success!', 'Registration & Payment Successful! Runner ID: ' + result.data._id, 'success');
+              form.reset();
+              // Reset custom UI elements
+              document.querySelectorAll('.custom-select-trigger span').forEach(span => {
+                if (span.closest('#genderDropdown')) span.textContent = 'Select Gender';
+                if (span.closest('#categoryDropdown')) span.textContent = 'Select Category';
+                span.style.color = '';
+              });
+              document.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+              feeDisplay.textContent = '₹0';
+            } else {
+              showAlert('Payment Verification Failed', result.message, 'error');
+            }
+          } catch (err) {
+            console.error('Verification Error:', err);
+            showAlert('Error', 'An error occurred while verifying payment.', 'error');
+          }
+        },
+        prefill: {
+          name: `${data.first_name} ${data.last_name}`,
+          email: data.email || '',
+          contact: data.mobile_no
+        },
+        theme: {
+          color: '#f97316' // orange-500
+        }
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.open();
+
     } catch (error) {
       console.error('Error:', error);
-      showAlert('Error', 'An error occurred during registration.', 'error');
+      showAlert('Payment Failed', error.message, 'error');
     }
   });
 });

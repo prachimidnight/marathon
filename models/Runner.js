@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+                                                                                    import mongoose from 'mongoose';
 
 const runnerSchema = new mongoose.Schema({
   first_name: {
@@ -13,12 +13,11 @@ const runnerSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
-    unique: true,
     lowercase: true,
     trim: true,
     validate: {
       validator: function (v) {
+        if (!v) return true; // Optional
         return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v);
       },
       message: props => `${props.value} is not a valid email address!`
@@ -42,11 +41,19 @@ const runnerSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['5K', '10K', 'Half Marathon', 'Full Marathon']
+    enum: ['5 kilometer', '10 kilometer', '21 kilometer']
   },
   fee: {
     type: Number,
     required: true
+  },
+  payment_id: String,
+  order_id: String,
+  signature: String,
+  payment_status: {
+    type: String,
+    enum: ['pending', 'completed', 'failed'],
+    default: 'pending'
   },
   registration_date: {
     type: Date,

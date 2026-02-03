@@ -125,14 +125,14 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- First Name -->
           <div class="space-y-1">
-            <label for="first_name" class="text-sm font-medium text-slate-300">First Name</label>
+            <label for="first_name" class="text-sm font-medium text-slate-300">First Name*</label>
             <input type="text" id="first_name" name="first_name" placeholder="Enter first name" required
               class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all">
             <div id="first_name_error" class="error-message">Please fill out this field.</div>
           </div>
           <!-- Last Name -->
           <div class="space-y-1">
-            <label for="last_name" class="text-sm font-medium text-slate-300">Last Name</label>
+            <label for="last_name" class="text-sm font-medium text-slate-300">Last Name*</label>
             <input type="text" id="last_name" name="last_name" placeholder="Enter last name" required
               class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all">
             <div id="last_name_error" class="error-message">Please fill out this field.</div>
@@ -143,23 +143,23 @@
           <!-- Email -->
           <div class="space-y-1">
             <label for="email" class="text-sm font-medium text-slate-300">Email Address</label>
-            <input type="email" id="email" name="email" placeholder="email@example.com" required
+            <input type="email" id="email" name="email" placeholder="email@example.com"
               class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all">
             <div id="email_error" class="error-message">Please enter a valid email address.</div>
           </div>
           <!-- Mobile No -->
           <div class="space-y-1">
-            <label for="mobile_no" class="text-sm font-medium text-slate-300">Mobile No (10-digit)</label>
-            <input type="tel" id="mobile_no" name="mobile_no" required pattern="[6-9][0-9]{9}" placeholder="9876543210"
+            <label for="mobile_no" class="text-sm font-medium text-slate-300">Mobile No*</label>
+            <input type="tel" id="mobile_no" name="mobile_no" required pattern="\+91[6-9][0-9]{9}" value="+91"
               class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all">
-            <div id="mobile_no_error" class="error-message">Please enter a valid 10-digit mobile number.</div>
+            <div id="mobile_no_error" class="error-message">Please enter a valid mobile number starting with +91.</div>
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Gender -->
           <div class="space-y-1">
-            <label class="text-sm font-medium text-slate-300">Gender</label>
+            <label class="text-sm font-medium text-slate-300">Gender*</label>
             <div class="custom-select-container" id="genderDropdown">
               <input type="hidden" name="gender" id="gender" required>
               <div
@@ -179,7 +179,7 @@
           </div>
           <!-- Category -->
           <div class="space-y-1">
-            <label class="text-sm font-medium text-slate-300">Category</label>
+            <label class="text-sm font-medium text-slate-300">Category*</label>
             <div class="custom-select-container" id="categoryDropdown">
               <input type="hidden" name="category" id="category" required>
               <div

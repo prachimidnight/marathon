@@ -125,8 +125,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById(id);
     el.addEventListener('input', () => {
       if (id === 'mobile_no') {
-        // Restrict to digits only and max 10 characters
-        el.value = el.value.replace(/\D/g, '').substring(0, 10);
+        // Ensure +91 prefix stays and only digits follow
+        let val = el.value;
+        if (!val.startsWith('+91')) {
+          val = '+91' + val.replace(/\D/g, '');
+        } else {
+          val = '+91' + val.substring(3).replace(/\D/g, '');
+        }
+        el.value = val.substring(0, 13); // +91 + 10 digits
       }
       hideError(id);
     });
@@ -142,17 +148,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!data.last_name) { showError('last_name'); isValid = false; }
 
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!data.email) {
-      showError('email', 'Email is required.'); isValid = false;
-    } else if (!emailRegex.test(data.email)) {
+    if (data.email && !emailRegex.test(data.email)) {
       showError('email', 'Please enter a valid email address.'); isValid = false;
     }
 
-    const mobileRegex = /^[6-9][0-9]{9}$/;
-    if (!data.mobile_no) {
+    const mobileRegex = /^\+91[6-9][0-9]{9}$/;
+    if (!data.mobile_no || data.mobile_no === '+91') {
       showError('mobile_no', 'Mobile number is required.'); isValid = false;
     } else if (!mobileRegex.test(data.mobile_no)) {
-      showError('mobile_no', 'Please enter a valid 10-digit mobile number.'); isValid = false;
+      showError('mobile_no', 'Please enter a valid mobile number starting with +91.'); isValid = false;
     }
 
     if (!data.gender) { showError('gender'); isValid = false; }
@@ -171,10 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
 
-    // Add +91 prefix to mobile number
-    if (data.mobile_no && !data.mobile_no.startsWith('+91')) {
-      data.mobile_no = '+91' + data.mobile_no;
-    }
+    // Mobile number already has +91 from input or logic above
 
     try {
       const response = await fetch('/register', {
